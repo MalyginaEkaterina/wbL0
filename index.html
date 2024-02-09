@@ -14,7 +14,6 @@
 <div id="error" style="color: red;"></div>
 
 <script>
-    // Define the function to display the JSON data
     function displayJson(jsonObj, targetElementId) {
         const targetElement = document.getElementById(targetElementId);
         let htmlContent = '<ul>';
@@ -35,8 +34,9 @@
         event.preventDefault(); // Предотвращаем стандартную отправку формы
         var id = document.getElementById('idInput').value;
 
-        // Очищаем ошибку перед каждым запросом
+        // Очищаем ошибку и предыдущий результат перед каждым запросом
         document.getElementById('error').innerText = '';
+        document.getElementById('result').innerHTML = '';
 
         fetch("/api/?id=" + encodeURIComponent(id))
             .then(response => {
@@ -50,8 +50,6 @@
             })
             .then(data => {
                 var resultDiv = document.getElementById('result');
-                resultDiv.innerHTML = ''; // Очищаем предыдущий результат
-
                 resultDiv.innerHTML = displayJson(data);
             })
             .catch(error => {
