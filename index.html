@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ID Input Form</title>
+</head>
+<body>
+<h1>Enter ID</h1>
+<form id="idForm">
+    <input type="text" id="idInput" placeholder="Enter ID">
+    <button type="submit">Submit</button>
+</form>
+
+<div id="result"></div>
+<div id="error" style="color: red;"></div>
+
+<script>
+    // Define the function to display the JSON data
+    function displayJson(jsonObj, targetElementId) {
+        const targetElement = document.getElementById(targetElementId);
+        let htmlContent = '<ul>';
+
+        for (let key in jsonObj) {
+            if (typeof jsonObj[key] === 'object') {
+                htmlContent += `<li>${key}: ${displayJson(jsonObj[key])}</li>`;
+            } else {
+                htmlContent += `<li>${key}: ${jsonObj[key]}</li>`;
+            }
+        }
+
+        htmlContent += '</ul>';
+        return htmlContent;
+    }
+
+    document.getElementById('idForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Предотвращаем стандартную отправку формы
+        var id = document.getElementById('idInput').value;
+
+        // Очищаем ошибку перед каждым запросом
+        document.getElementById('error').innerText = '';
+
+        fetch("/api/?id=" + encodeURIComponent(id))
+            .then(response => {
+                if (!response.ok) {
+                    // Если статус ответа не успешен, читаем тело ответа как текст
+                    return response.text().then(errorMessage => {
+                        throw new Error(errorMessage);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                var resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = ''; // Очищаем предыдущий результат
+
+                resultDiv.innerHTML = displayJson(data);
+            })
+            .catch(error => {
+                    document.getElementById('error').innerText = 'Error: ' + error.message;
+            });
+    });
+</script>
+</body>
+</html>

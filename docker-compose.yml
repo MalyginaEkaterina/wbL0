@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./
+    command: ./backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      nats-streaming:
+        condition: service_started
+    environment:
+      - ADDRESS=:8080
+      - NATS_URL=nats://nats-streaming:4222
+      - BACK_CLIENT_ID=testback
+      - CHANNEL_NAME=testchannel
+      - DATABASE_URI=user=postgres password=12345 host=db port=5432 dbname=postgres sslmode=disable
+      - DURABLE_NAME=testdurable
+      - STAN_CLUSTER_ID=test-cluster
+
+  db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=12345
+      - POSTGRES_DB=postgres
+    volumes:
+      - ./.database/postgres/data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  nats-streaming:
+    image: nats-streaming:latest
+    environment:
+      - STAN_STORE=MEMORY
+      - STAN_LOG_TO=stdout
